@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shopee Affiliate Link Converter</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .card { background: #fff; border-radius: 16px; padding: 2rem; max-width: 520px; width: 100%; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.75rem; }
+  .icon { width: 44px; height: 44px; background: #fff0f0; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  h1 { font-size: 17px; font-weight: 600; color: #1a1a1a; }
+  .sub { font-size: 12px; color: #888; margin-top: 2px; }
+  .af-badge { margin-left: auto; background: #e8f5e9; color: #2e7d32; font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; }
+  label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; font-weight: 500; }
+  textarea, input[type=text] { width: 100%; padding: 10px 12px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 13px; font-family: inherit; transition: border-color 0.15s; outline: none; background: #fafafa; }
+  textarea:focus, input[type=text]:focus { border-color: #ee4d2d; background: #fff; }
+  textarea { resize: vertical; min-height: 90px; }
+  .field { margin-bottom: 1.1rem; }
+  .status { font-size: 12px; margin-top: 5px; min-height: 16px; }
+  .ok { color: #2e7d32; }
+  .err { color: #c62828; }
+  .extracted { font-size: 12px; color: #1565c0; margin-top: 6px; background: #e3f2fd; padding: 7px 10px; border-radius: 8px; word-break: break-all; display: none; line-height: 1.5; }
+  details { margin-bottom: 1.1rem; }
+  summary { font-size: 13px; color: #888; cursor: pointer; user-select: none; list-style: none; display: flex; align-items: center; gap: 6px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: '▸'; font-size: 11px; transition: transform 0.15s; }
+  details[open] summary::before { transform: rotate(90deg); }
+  .opt-grid { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .btn { width: 100%; padding: 13px; background: #ee4d2d; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+  .btn:hover { background: #d84315; }
+  .result-box { margin-top: 1.25rem; background: #f9f9f9; border: 1.5px solid #e0e0e0; border-radius: 10px; padding: 14px; display: none; }
+  .result-label { font-size: 12px; color: #888; margin-bottom: 8px; font-weight: 500; }
+  .result-url { font-size: 12px; font-family: monospace; color: #1a1a1a; word-break: break-all; line-height: 1.6; }
+  .copy-btn { margin-top: 10px; width: 100%; padding: 9px; background: #fff; border: 1.5px solid #e0e0e0; border-radius: 8px; font-size: 13px; cursor: pointer; color: #555; font-weight: 500; transition: all 0.15s; }
+  .copy-btn:hover { border-color: #ee4d2d; color: #ee4d2d; }
+  .copy-btn.copied { border-color: #2e7d32; color: #2e7d32; }
+  .short-note { margin-top: 10px; font-size: 12px; color: #795548; background: #fff8e1; padding: 8px 12px; border-radius: 8px; display: none; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <div class="icon">🛍️</div>
+    <div>
+      <h1>Shopee Affiliate Link</h1>
+      <div class="sub">วางข้อความหรือ link ได้เลย ทุกรูปแบบ</div>
+    </div>
+    <div class="af-badge">✓ ID: 15385740436</div>
+  </div>
+
+  <div class="field">
+    <label>วางข้อความหรือ link Shopee</label>
+    <textarea id="raw-input" placeholder="วางได้ทั้ง link เปล่า หรือข้อความแชร์จาก Shopee เช่น&#10;&quot;ลองเข้ามาดูสินค้า... https://th.shp.ee/pJc99Pr&quot;"></textarea>
+    <div class="status" id="url-status"></div>
+    <div class="extracted" id="extracted-url"></div>
+  </div>
+
+  <details>
+    <summary>ตั้งค่าเพิ่มเติม (ไม่บังคับ)</summary>
+    <div class="opt-grid">
+      <div class="field">
+        <label>แหล่งที่มา (smtt)</label>
+        <input type="text" id="smtt" placeholder="ig, line, tiktok" />
+      </div>
+      <div class="field">
+        <label>Sub ID</label>
+        <input type="text" id="sub-id" placeholder="jul2026" />
+      </div>
+    </div>
+  </details>
+
+  <button class="btn" onclick="convert()">🔗 แปลง Link</button>
+
+  <div class="result-box" id="result-box">
+    <div class="result-label">Affiliate link พร้อมแชร์</div>
+    <div class="result-url" id="result-url"></div>
+    <div class="short-note" id="short-note">ℹ️ Link นี้เป็น short link (th.shp.ee) — affiliate param ถูกต่อท้ายแล้ว ใช้งานได้ปกติครับ</div>
+    <button class="copy-btn" id="copy-btn" onclick="copyLink()">📋 คัดลอก link</button>
+  </div>
+</div>
+
+<script>
+const AF_ID = '15385740436';
+
+const SHOPEE_PATTERNS = [
+  /https?:\/\/th\.shp\.ee\/[^\s"'）】』.,!?]+/,
+  /https?:\/\/shope\.ee\/[^\s"'）】』.,!?]+/,
+  /https?:\/\/s\.shopee\.co\.th\/[^\s"'）】』.,!?]+/,
+  /https?:\/\/shopee\.co\.th\/[^\s"'）】』.,!?]+/,
+  /https?:\/\/[\w.-]*shopee[\w.-]*\/[^\s"'）】』.,!?]+/,
+];
+
+function extractShopeeUrl(text) {
+  for (const p of SHOPEE_PATTERNS) {
+    const m = text.match(p);
+    if (m) return m[0];
+  }
+  return null;
+}
+
+function isShortLink(url) {
+  return /th\.shp\.ee|shope\.ee|s\.shopee\.co\.th/.test(url);
+}
+
+document.getElementById('raw-input').addEventListener('input', function() {
+  const val = this.value.trim();
+  const s = document.getElementById('url-status');
+  const ex = document.getElementById('extracted-url');
+  if (!val) { s.textContent = ''; s.className = 'status'; ex.style.display = 'none'; return; }
+  const found = extractShopeeUrl(val);
+  if (found) {
+    s.textContent = isShortLink(found) ? '✓ พบ short link ของ Shopee' : '✓ พบ link สินค้า Shopee';
+    s.className = 'status ok';
+    ex.textContent = '🔗 พบ: ' + found;
+    ex.style.display = 'block';
+  } else {
+    s.textContent = 'ไม่พบ link ของ Shopee ในข้อความนี้';
+    s.className = 'status err';
+    ex.style.display = 'none';
+  }
+});
+
+function convert() {
+  const raw = document.getElementById('raw-input').value.trim();
+  if (!raw) { alert('กรุณาวาง URL หรือข้อความจาก Shopee ก่อนนะครับ'); return; }
+  const url = extractShopeeUrl(raw);
+  if (!url) { alert('ไม่พบ link ของ Shopee ในข้อความนี้'); return; }
+  let result;
+  const short = isShortLink(url);
+  try {
+    const u = new URL(url);
+    u.searchParams.set('af_id', AF_ID);
+    const smtt = document.getElementById('smtt').value.trim();
+    const sub = document.getElementById('sub-id').value.trim();
+    if (smtt) u.searchParams.set('smtt', smtt);
+    if (sub) u.searchParams.set('sub_id', sub);
+    result = u.toString();
+  } catch {
+    result = url + '?af_id=' + AF_ID;
+  }
+  document.getElementById('result-url').textContent = result;
+  document.getElementById('result-box').style.display = 'block';
+  document.getElementById('short-note').style.display = short ? 'block' : 'none';
+  const btn = document.getElementById('copy-btn');
+  btn.textContent = '📋 คัดลอก link';
+  btn.className = 'copy-btn';
+}
+
+function copyLink() {
+  const text = document.getElementById('result-url').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ คัดลอกแล้ว!';
+    btn.className = 'copy-btn copied';
+    setTimeout(() => {
+      btn.textContent = '📋 คัดลอก link';
+      btn.className = 'copy-btn';
+    }, 2000);
+  });
+}
+</script>
+</body>
+</html>
