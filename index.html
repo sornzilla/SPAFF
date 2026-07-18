@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shopee Affiliate Link</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .card { background: #fff; border-radius: 16px; padding: 2rem; max-width: 500px; width: 100%; box-shadow: 0 2px 16px rgba(0,0,0,0.09); }
+  .header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
+  .logo { width: 46px; height: 46px; background: #fff0ee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+  h1 { font-size: 17px; font-weight: 700; color: #1a1a1a; }
+  .sub { font-size: 12px; color: #999; margin-top: 2px; }
+  .af-badge { margin-left: auto; background: #e8f5e9; color: #2e7d32; font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; }
+  .worker-warn { background: #fff3e0; border: 1.5px solid #ffb74d; border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #e65100; margin-bottom: 1.25rem; line-height: 1.7; display: none; }
+  .worker-warn strong { display: block; margin-bottom: 2px; }
+  label { display: block; font-size: 13px; color: #444; margin-bottom: 7px; font-weight: 600; }
+  textarea { width: 100%; padding: 12px 14px; border: 2px solid #efefef; border-radius: 12px; font-size: 13px; font-family: inherit; outline: none; background: #fafafa; resize: vertical; min-height: 100px; transition: border-color 0.15s; line-height: 1.6; }
+  textarea:focus { border-color: #ee4d2d; background: #fff; }
+  .found-box { margin-top: 8px; padding: 9px 12px; background: #e3f2fd; border-radius: 8px; font-size: 12px; color: #1565c0; word-break: break-all; display: none; line-height: 1.5; }
+  .status { font-size: 12px; margin-top: 6px; min-height: 16px; }
+  .ok { color: #2e7d32; } .err { color: #c62828; }
+  .two-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 1rem; }
+  .btn-copy-main, .btn-open-main { padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+  .btn-copy-main { background: #fff; color: #ee4d2d; border: 2px solid #ee4d2d; }
+  .btn-copy-main:hover { background: #fff5f3; }
+  .btn-copy-main:disabled, .btn-open-main:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-copy-main.copied { background: #e8f5e9; color: #2e7d32; border-color: #2e7d32; }
+  .btn-open-main { background: #ee4d2d; color: #fff; border: 2px solid #ee4d2d; }
+  .btn-open-main:hover { background: #d84315; border-color: #d84315; }
+  .loading { display: none; text-align: center; padding: 1.25rem 0; color: #888; font-size: 13px; }
+  .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid #eee; border-top-color: #ee4d2d; border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 8px; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-step { font-size: 12px; color: #bbb; margin-top: 4px; }
+  .result-section { display: none; margin-top: 1.25rem; }
+  .result-card { background: #f9fbe7; border: 2px solid #c5e1a5; border-radius: 12px; padding: 14px 16px; }
+  .result-label { font-size: 11px; font-weight: 700; color: #558b2f; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; }
+  .result-url { font-size: 12px; font-family: monospace; color: #1a1a1a; word-break: break-all; line-height: 1.6; }
+  .notice { display: none; margin-top: 1rem; border-radius: 10px; padding: 12px 14px; font-size: 13px; line-height: 1.7; }
+  .notice.warn { background: #fff8e1; border: 1.5px solid #ffcc80; color: #e65100; }
+  .notice.err-red { background: #fce4ec; border: 1.5px solid #f48fb1; color: #880e4f; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <div class="logo">🛍️</div>
+    <div>
+      <h1>Shopee Affiliate Link</h1>
+      <div class="sub">วาง link หรือข้อความ → กดปุ่มเดียว</div>
+    </div>
+    <div class="af-badge">✓ ID: 15385740436</div>
+  </div>
+
+  <div class="worker-warn" id="worker-warn">
+    <strong>⚠️ ยังไม่ได้ตั้งค่า Worker URL</strong>
+    เปิดไฟล์นี้แล้วแก้ไขบรรทัด <code>WORKER_URL</code> ใส่ URL ของ Cloudflare Worker ของคุณก่อนนะครับ
+  </div>
+
+  <div>
+    <label>วาง link หรือข้อความจาก Shopee</label>
+    <textarea id="raw-input" placeholder="วางได้ทุกรูปแบบ เช่น&#10;https://s.shopee.co.th/9zwEiE2OJt&#10;หรือข้อความแชร์ยาวๆ ที่มี link อยู่ด้านใน"></textarea>
+    <div class="status" id="url-status"></div>
+    <div class="found-box" id="found-box"></div>
+  </div>
+
+  <div class="two-btns">
+    <button class="btn-copy-main" id="btn-copy-main" onclick="convertAndCopy()">📋 Copy Link</button>
+    <button class="btn-open-main" id="btn-open-main" onclick="convertAndOpen()">🛒 เปิด Link</button>
+  </div>
+
+  <div class="loading" id="loading">
+    <div><span class="spinner"></span> กำลังดึง link จริง...</div>
+    <div class="loading-step" id="loading-step"></div>
+  </div>
+
+  <div class="result-section" id="result-section">
+    <div class="result-card">
+      <div class="result-label">✅ Affiliate link พร้อมแล้ว</div>
+      <div class="result-url" id="result-url"></div>
+    </div>
+  </div>
+
+  <div class="notice" id="notice"></div>
+</div>
+
+<script>
+// ======================================================
+// 👇 ใส่ URL ของ Cloudflare Worker ที่นี่
+const WORKER_URL = 'YOUR_WORKER_URL_HERE';
+// ตัวอย่าง: 'https://shopee-expander.yourname.workers.dev'
+// ======================================================
+
+const AF_ID = '15385740436';
+let finalAffLink = '';
+
+// แจ้งถ้ายังไม่ได้ตั้งค่า worker
+if (!WORKER_URL || WORKER_URL === 'YOUR_WORKER_URL_HERE') {
+  document.getElementById('worker-warn').style.display = 'block';
+}
+
+const SHOPEE_PATTERNS = [
+  /https?:\/\/th\.shp\.ee\/[^\s"'）】』<>\n]+/,
+  /https?:\/\/shope\.ee\/[^\s"'）】』<>\n]+/,
+  /https?:\/\/s\.shopee\.co\.th\/[^\s"'）】』<>\n]+/,
+  /https?:\/\/shopee\.co\.th\/[^\s"'）】』<>\n]+/,
+];
+
+function extractShopeeUrl(text) {
+  for (const p of SHOPEE_PATTERNS) {
+    const m = text.match(p);
+    if (m) return m[0].replace(/[.,!?)]+$/, '');
+  }
+  return null;
+}
+
+function isShortLink(url) {
+  return /th\.shp\.ee|shope\.ee|s\.shopee\.co\.th/.test(url);
+}
+
+function isValidProductUrl(url) {
+  return /shopee\.co\.th/.test(url) && (
+    /-i\.\d{5,}\.\d{5,}/.test(url) ||
+    /\/product\/\d{5,}\/\d{5,}/.test(url)
+  );
+}
+
+function addAffiliate(url) {
+  try {
+    const u = new URL(url);
+    u.searchParams.set('af_id', AF_ID);
+    return u.toString();
+  } catch {
+    return url + (url.includes('?') ? '&' : '?') + 'af_id=' + AF_ID;
+  }
+}
+
+function fetchWithTimeout(url, ms = 8000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
+async function expandViaWorker(shortUrl) {
+  if (!WORKER_URL || WORKER_URL === 'YOUR_WORKER_URL_HERE') {
+    throw new Error('ยังไม่ได้ตั้งค่า Worker URL');
+  }
+  const res = await fetchWithTimeout(WORKER_URL + '?url=' + encodeURIComponent(shortUrl));
+  const data = await res.json();
+  if (data.url && data.url !== shortUrl) return data.url;
+  throw new Error('Worker ไม่สามารถขยาย URL ได้');
+}
+
+document.getElementById('raw-input').addEventListener('input', function() {
+  const val = this.value.trim();
+  const s = document.getElementById('url-status');
+  const fb = document.getElementById('found-box');
+  document.getElementById('result-section').style.display = 'none';
+  document.getElementById('notice').style.display = 'none';
+  if (!val) { s.textContent = ''; s.className = 'status'; fb.style.display = 'none'; return; }
+  const found = extractShopeeUrl(val);
+  if (found) {
+    s.textContent = isShortLink(found) ? '✓ พบ short link — จะดึง link จริงให้อัตโนมัติ' : '✓ พบ link สินค้า Shopee';
+    s.className = 'status ok';
+    fb.textContent = '🔗 ' + found;
+    fb.style.display = 'block';
+  } else {
+    s.textContent = 'ไม่พบ link ของ Shopee ในข้อความนี้';
+    s.className = 'status err';
+    fb.style.display = 'none';
+  }
+});
+
+function setDisabled(val) {
+  document.getElementById('btn-copy-main').disabled = val;
+  document.getElementById('btn-open-main').disabled = val;
+}
+
+async function doConvert() {
+  const raw = document.getElementById('raw-input').value.trim();
+  if (!raw) { alert('กรุณาวาง link หรือข้อความก่อนนะครับ'); return null; }
+  const url = extractShopeeUrl(raw);
+  if (!url) { alert('ไม่พบ link ของ Shopee ในข้อความนี้'); return null; }
+
+  const loading = document.getElementById('loading');
+  const stepEl = document.getElementById('loading-step');
+  const resultSection = document.getElementById('result-section');
+  const notice = document.getElementById('notice');
+
+  setDisabled(true);
+  loading.style.display = 'block';
+  resultSection.style.display = 'none';
+  notice.style.display = 'none';
+
+  try {
+    let fullUrl = url;
+
+    if (isShortLink(url)) {
+      stepEl.textContent = 'กำลังขยาย short link...';
+      try {
+        fullUrl = await expandViaWorker(url);
+        if (!isValidProductUrl(fullUrl)) {
+          // Worker ได้ URL มาแต่ไม่ใช่ product URL — ลองอีกรอบ
+          throw new Error('URL ที่ได้ไม่ใช่หน้าสินค้า');
+        }
+      } catch (e) {
+        // fallback: ใช้ short link ตรงๆ
+        fullUrl = url;
+        notice.innerHTML = '⚠️ ดึง link จริงไม่ได้ (' + e.message + ') — ใช้ short link แทน affiliate อาจไม่ติด 100%';
+        notice.className = 'notice warn';
+        notice.style.display = 'block';
+      }
+    }
+
+    finalAffLink = addAffiliate(fullUrl);
+    document.getElementById('result-url').textContent = finalAffLink;
+    resultSection.style.display = 'block';
+    return finalAffLink;
+  } catch (e) {
+    notice.innerHTML = '❌ เกิดข้อผิดพลาด: ' + e.message;
+    notice.className = 'notice err-red';
+    notice.style.display = 'block';
+    return null;
+  } finally {
+    setDisabled(false);
+    loading.style.display = 'none';
+  }
+}
+
+async function convertAndCopy() {
+  const link = await doConvert();
+  if (!link) return;
+  const btn = document.getElementById('btn-copy-main');
+  navigator.clipboard.writeText(link).then(() => {
+    btn.textContent = '✓ คัดลอกแล้ว!';
+    btn.className = 'btn-copy-main copied';
+    setTimeout(() => { btn.textContent = '📋 Copy Link'; btn.className = 'btn-copy-main'; }, 2000);
+  });
+}
+
+async function convertAndOpen() {
+  const win = window.open('', '_blank'); // ต้อง sync ก่อน await ไม่งั้นโดนบล็อก
+  const link = await doConvert();
+  if (!link) { if (win) win.close(); return; }
+  if (win) { win.location.href = link; } else { location.href = link; }
+}
+</script>
+</body>
+</html>
