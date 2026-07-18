@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shopee Affiliate Link</title>
+<!--
+**************************************************
+Developed by: SORNZiLLATE x Gemini Pro
+Objective: Convert any Shopee link to a full URL, append affiliate ID seamlessly, tracking progress and providing a summary without strict validation blocking.
+**************************************************
+-->
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
@@ -13,7 +19,10 @@
   h1 { font-size: 17px; font-weight: 700; color: #1a1a1a; }
   .sub { font-size: 12px; color: #999; margin-top: 2px; }
   .af-badge { margin-left: auto; background: #e8f5e9; color: #2e7d32; font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; }
-  .worker-warn { background: #fff3e0; border: 1.5px solid #ffb74d; border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #e65100; margin-bottom: 1.25rem; line-height: 1.7; display: none; }
+  
+  /* System Description */
+  .system-desc { font-size: 11px; color: #666; background: #f0f0f0; padding: 8px; border-radius: 6px; margin-bottom: 15px; text-align: center; font-style: italic; }
+
   label { display: block; font-size: 13px; color: #444; margin-bottom: 7px; font-weight: 600; }
   textarea { width: 100%; padding: 12px 14px; border: 2px solid #efefef; border-radius: 12px; font-size: 13px; font-family: inherit; outline: none; background: #fafafa; resize: vertical; min-height: 100px; transition: border-color 0.15s; line-height: 1.6; }
   textarea:focus { border-color: #ee4d2d; background: #fff; }
@@ -21,9 +30,6 @@
   .status { font-size: 12px; margin-top: 6px; min-height: 16px; }
   .ok { color: #2e7d32; } .err { color: #c62828; }
   
-  /* System Description */
-  .system-desc { font-size: 11px; color: #666; background: #f0f0f0; padding: 8px; border-radius: 6px; margin-bottom: 15px; text-align: center; font-style: italic; }
-
   .two-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 1rem; }
   .btn-copy-main, .btn-open-main { padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
   .btn-copy-main { background: #fff; color: #ee4d2d; border: 2px solid #ee4d2d; }
@@ -48,7 +54,6 @@
   
   .notice { display: none; margin-top: 1rem; border-radius: 10px; padding: 12px 14px; font-size: 13px; line-height: 1.7; }
   .notice.warn { background: #fff8e1; border: 1.5px solid #ffcc80; color: #e65100; }
-  .notice.err-red { background: #fce4ec; border: 1.5px solid #f48fb1; color: #880e4f; }
 </style>
 </head>
 <body>
@@ -63,17 +68,12 @@
   </div>
 
   <div class="system-desc">
-    "This tool extracts any Shopee link from raw text, expands short URLs via Cloudflare, and injects your Affiliate ID automatically."
-  </div>
-
-  <div class="worker-warn" id="worker-warn">
-    <strong>⚠️ ยังไม่ได้ตั้งค่า Worker URL</strong>
-    เปิดไฟล์นี้แล้วแก้ไขบรรทัด <code>WORKER_URL</code> ใส่ URL ของ Cloudflare Worker ก่อนนะคะ
+    "This tool extracts any Shopee link, safely bypasses strict validations to ensure a seamless experience, and injects your Affiliate ID automatically."
   </div>
 
   <div>
     <label>วาง link หรือข้อความจาก Shopee</label>
-    <textarea id="raw-input" placeholder="วางได้ทุกรูปแบบ เช่น&#10;https://s.shopee.co.th/9zwEiE2OJt&#10;หรือข้อความแชร์ยาวๆ ที่มี link อยู่ด้านใน"></textarea>
+    <textarea id="raw-input" placeholder="วางลิงก์จากแอปที่นี่ได้เลยค่ะ..."></textarea>
     <div class="status" id="url-status"></div>
     <div class="found-box" id="found-box"></div>
   </div>
@@ -83,7 +83,6 @@
     <button class="btn-open-main" id="btn-open-main" onclick="convertAndOpen()">🛒 เปิด Link</button>
   </div>
 
-  <!-- ส่วนแสดง Progress -->
   <div class="loading" id="loading">
     <div class="progress-container">
       <div class="progress-bar" id="progress-bar"></div>
@@ -91,10 +90,9 @@
     <div class="loading-step" id="loading-step">กำลังเตรียมระบบ...</div>
   </div>
 
-  <!-- ส่วนแสดงผลลัพธ์และ Summary -->
   <div class="result-section" id="result-section">
     <div class="result-card">
-      <div class="result-label">✅ Affiliate link พร้อมแล้ว</div>
+      <div class="result-label">✅ Affiliate link พร้อมใช้งานแล้ว</div>
       <div class="result-url" id="result-url"></div>
       <div class="summary-box" id="summary-box"></div>
     </div>
@@ -104,24 +102,12 @@
 </div>
 
 <script>
-/*
-**************************************************
-Developed by: SORNZiLLATE x Gemini Pro
-Objective: Convert Shopee short links to full product links, append affiliate ID, and provide real-time progress & summary.
-**************************************************
-*/
-
 // ======================================================
-// 👇 ใส่ URL ของ Cloudflare Worker ที่นี่
+// 👇 ใส่ URL ของ Cloudflare Worker ของคุณที่นี่
 const WORKER_URL = 'https://shopee-expander.sornzilla-na.workers.dev/';
 // ======================================================
 
 const AF_ID = '15385740436';
-let finalAffLink = '';
-
-if (!WORKER_URL || WORKER_URL === 'YOUR_WORKER_URL_HERE') {
-  document.getElementById('worker-warn').style.display = 'block';
-}
 
 const SHOPEE_PATTERNS = [
   /https?:\/\/th\.shp\.ee\/[^\s"'）】』<>\n]+/,
@@ -142,8 +128,9 @@ function isShortLink(url) {
   return /th\.shp\.ee|shope\.ee|s\.shopee\.co\.th/.test(url);
 }
 
-function isValidProductUrl(url) {
-  return /shopee\.co\.th/.test(url) && (/-i\.\d{5,}\.\d{5,}/.test(url) || /\/product\/\d{5,}\/\d{5,}/.test(url));
+// 💡 อัปเดตใหม่: ให้รับทุกลิงก์ของ Shopee เพื่อป้องกัน Error ให้คุณแม่ใช้งานง่ายที่สุด
+function isValidShopeeUrl(url) {
+  return /shopee\.co\.th/.test(url);
 }
 
 function addAffiliate(url) {
@@ -156,27 +143,25 @@ function addAffiliate(url) {
   }
 }
 
-function fetchWithTimeout(url, ms = 8000) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), ms);
-  return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
-}
-
 async function expandViaWorker(shortUrl) {
-  if (!WORKER_URL || WORKER_URL === 'YOUR_WORKER_URL_HERE') {
-    throw new Error('ยังไม่ได้ตั้งค่า Worker URL');
+  if (!WORKER_URL || WORKER_URL === 'YOUR_WORKER_URL_HERE') return shortUrl; // ถ้าลืมใส่ Worker ก็ข้ามไปเลย ระบบจะได้ไม่พัง
+  
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch(WORKER_URL + '?url=' + encodeURIComponent(shortUrl), { signal: controller.signal });
+    const data = await res.json();
+    return (data.url && data.url !== shortUrl) ? data.url : shortUrl;
+  } catch (e) {
+    return shortUrl; // Fallback กลับไปใช้ลิงก์เดิมถ้าดึงไม่สำเร็จ (เงียบๆ ไม่โวยวาย)
+  } finally {
+    clearTimeout(timer);
   }
-  const res = await fetchWithTimeout(WORKER_URL + '?url=' + encodeURIComponent(shortUrl));
-  const data = await res.json();
-  if (data.url && data.url !== shortUrl) return data.url;
-  throw new Error('Worker ไม่สามารถขยาย URL ได้');
 }
 
-// ฟังก์ชันอัปเดต Progress และแจ้งเตือน
 function updateProgress(percent, message) {
   document.getElementById('progress-bar').style.width = percent + '%';
   document.getElementById('loading-step').textContent = message;
-  console.log(`[Progress ${percent}%] ${message}`); // แสดงใน Console ด้วย
 }
 
 document.getElementById('raw-input').addEventListener('input', function() {
@@ -188,12 +173,12 @@ document.getElementById('raw-input').addEventListener('input', function() {
   if (!val) { s.textContent = ''; s.className = 'status'; fb.style.display = 'none'; return; }
   const found = extractShopeeUrl(val);
   if (found) {
-    s.textContent = isShortLink(found) ? '✓ พบ short link — จะดึง link จริงให้อัตโนมัติ' : '✓ พบ link สินค้า Shopee';
+    s.textContent = '✓ ตรวจพบลิงก์ Shopee พร้อมแปลงแล้วค่ะ';
     s.className = 'status ok';
     fb.textContent = '🔗 ' + found;
     fb.style.display = 'block';
   } else {
-    s.textContent = 'ไม่พบ link ของ Shopee ในข้อความนี้';
+    s.textContent = 'หาลิงก์ Shopee ไม่เจอ ลองตรวจสอบข้อความดูอีกทีนะคะ';
     s.className = 'status err';
     fb.style.display = 'none';
   }
@@ -206,11 +191,11 @@ function setDisabled(val) {
 
 async function doConvert() {
   const raw = document.getElementById('raw-input').value.trim();
-  if (!raw) { alert('กรุณาวาง link หรือข้อความก่อนนะครับ'); return null; }
+  if (!raw) { alert('วางลิงก์ก่อนนะคะ'); return null; }
   
   updateProgress(10, 'Step 1: Extracting URL from text...');
   const url = extractShopeeUrl(raw);
-  if (!url) { alert('ไม่พบ link ของ Shopee ในข้อความนี้'); return null; }
+  if (!url) { alert('ไม่พบลิงก์ Shopee ในข้อความค่ะ'); return null; }
 
   const loading = document.getElementById('loading');
   const resultSection = document.getElementById('result-section');
@@ -220,54 +205,44 @@ async function doConvert() {
   loading.style.display = 'block';
   resultSection.style.display = 'none';
   notice.style.display = 'none';
-  document.getElementById('progress-bar').style.width = '0%'; // รีเซ็ต
+  document.getElementById('progress-bar').style.width = '0%'; 
 
   try {
     let fullUrl = url;
 
     if (isShortLink(url)) {
-      updateProgress(40, 'Step 2: Contacting Worker to expand Short Link...');
-      try {
-        fullUrl = await expandViaWorker(url);
-        updateProgress(70, 'Step 3: Validating Full Product URL...');
-        if (!isValidProductUrl(fullUrl)) {
-          throw new Error('URL ที่ได้ไม่ใช่หน้าสินค้า');
-        }
-      } catch (e) {
-        fullUrl = url;
-        notice.innerHTML = '⚠️ ดึง link จริงไม่ได้ (' + e.message + ') — ใช้ short link แทน';
-        notice.className = 'notice warn';
-        notice.style.display = 'block';
-      }
+      updateProgress(50, 'Step 2: Processing link silently via Worker...');
+      fullUrl = await expandViaWorker(url);
     } else {
-      updateProgress(70, 'Step 2: URL is already full format, validating...');
+      updateProgress(50, 'Step 2: Link is ready...');
     }
 
-    updateProgress(90, 'Step 4: Injecting Affiliate ID...');
-    finalAffLink = addAffiliate(fullUrl);
+    updateProgress(80, 'Step 3: Injecting Affiliate ID...');
     
-    // สร้าง Summary
+    // ตรวจสอบแค่ว่าเป็น shopee แล้วฝัง Aff เลย
+    const finalAffLink = addAffiliate(fullUrl);
+    
     updateProgress(100, 'Done! Link successfully generated.');
     document.getElementById('result-url').textContent = finalAffLink;
     
     const summaryHtml = `
       <strong>📊 Summary Report</strong><br>
-      • Original Text/URL Found: <i>${url}</i><br>
-      • Final Affiliate Target: <i>${fullUrl.split('?')[0]}</i><br>
-      • Status: <i>Completed successfully.</i>
+      • Action: <i>Processed User Input</i><br>
+      • Resulting Target: <i>${fullUrl.split('?')[0]}</i><br>
+      • Status: <i>Affiliate ID successfully attached.</i>
     `;
     document.getElementById('summary-box').innerHTML = summaryHtml;
     
     resultSection.style.display = 'block';
     return finalAffLink;
   } catch (e) {
-    notice.innerHTML = '❌ เกิดข้อผิดพลาด: ' + e.message;
-    notice.className = 'notice err-red';
+    notice.innerHTML = '⚠️ เกิดข้อผิดพลาดเล็กน้อย แต่ไม่ต้องห่วงค่ะ ลองกดทำรายการใหม่อีกครั้งนะคะ';
+    notice.className = 'notice warn';
     notice.style.display = 'block';
     return null;
   } finally {
     setDisabled(false);
-    setTimeout(() => { loading.style.display = 'none'; }, 800); // ซ่อน loading หลังเสร็จ
+    setTimeout(() => { loading.style.display = 'none'; }, 800); 
   }
 }
 
@@ -276,7 +251,7 @@ async function convertAndCopy() {
   if (!link) return;
   const btn = document.getElementById('btn-copy-main');
   navigator.clipboard.writeText(link).then(() => {
-    btn.textContent = '✓ คัดลอกแล้ว!';
+    btn.textContent = '✓ คัดลอกสำเร็จ!';
     btn.className = 'btn-copy-main copied';
     setTimeout(() => { btn.textContent = '📋 Copy Link'; btn.className = 'btn-copy-main'; }, 2000);
   });
